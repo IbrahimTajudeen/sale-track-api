@@ -10,6 +10,7 @@ interface Supabase {
     anonKey: string;
     serviceRoleKey: string;
     jwtAudience: string;
+    jwtSecret: string;
     projectId: string;
 }
 
@@ -22,4 +23,24 @@ interface Smtp {
 
 interface ApiVerve {
     apiKey: string;
+}
+
+@Injectable()
+export class AppConfigService {
+    constructor(private configService: ConfigService) {}
+
+    get app(): number {
+        return this.configService.get<number>('PORT', 3100);
+    }
+
+    get supabase(): Supabase {
+        return {
+            url: this.configService.get<string>('SUPABASE_URL', ''),
+            anonKey: this.configService.get<string>('SUPABASE_ANON_KEY', ''),
+            serviceRoleKey: this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY', ''),
+            jwtAudience: this.configService.get<string>('SUPABASE_JWT_AUDIENCE', 'authenticated'),
+            jwtSecret: this.configService.get<string>('SUPABASE_JWT_SECRET', ''),
+            projectId: this.configService.get<string>('SUPABASE_PROJECT_ID', ''),
+        };
+    }
 }
