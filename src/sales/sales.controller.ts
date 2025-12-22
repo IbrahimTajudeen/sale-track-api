@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // sales/sales.controller.ts
 import {
   Controller,
@@ -36,8 +37,8 @@ export class SalesController {
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   @ApiBody({ type: CreateSaleDto, description: 'Data for creating a new sale record' })
   @Post()
-  create(@User() user, @Body() dto: CreateSaleDto) {
-    return this.salesService.create(user.id, dto);
+  create(@User() user: any, @Body() dto: CreateSaleDto) {
+    return this.salesService.create(user, dto);
   }
 
   @Get()
