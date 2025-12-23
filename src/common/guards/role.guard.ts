@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SupabaseService } from 'src/supabase/supabase.service';
-import { UserRole } from 'src/common/types/user-role.types';
+import { UserRole } from '../types/user-role.type';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

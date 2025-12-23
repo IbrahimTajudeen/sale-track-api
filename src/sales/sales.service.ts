@@ -319,6 +319,11 @@ export class SalesService {
         throw new ForbiddenException('Failed, Only users can update sale record')
       }
 
+      if(!dto.quantity || !dto.pricePerItem) {
+        this.logger.error(`Both the field quantity and price per item are required`)
+        throw new BadRequestException('Both the field quantity and price per item are required')
+      }
+
       const { data, error } = await this.supabase.client()
       .from('sales_records')
       .select(`
