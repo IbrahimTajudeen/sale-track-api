@@ -52,38 +52,44 @@ export class SalesService {
     }
   }
 
-  async createBulkSales(user: any, dtos: CreateSaleDto[]) : Promise<SaleTrackApiResponse<any>> {
+  async createBulkSales(user: any, dtos: CreateSaleDto[]) : Promise<SaleTrackApiResponse<{ insertedRecords: number }>> {
     try {
       if(user.role as UserRole !== UserRole.USER) {
         this.logger.error(`User with ID ${user.id} and role ${user.role} attempted to create a sale record.`);
         throw new Error('Only users with USER role can create sales records.');
       }
-      const total = dto.pricePerItem * dto.quantity;
+
       const userId = user.id;
-    
-      const { error } = await this.supabase.client()
-      .from('sales_records')
-      .insert({
+      let records = dtos.map(dto => ({
         user_id: userId,
         sale_date: dto.saleDate,
         item_name: dto.itemName,
         price_per_item: dto.pricePerItem,
         quantity: dto.quantity,
-        total_amount: total,
-      });
+        total_amount: dto.pricePerItem * dto.quantity,
+      }));
+    
+      const { error } = await this.supabase.client()
+      .from('sales_records')
+      .insert(records);
 
       if(error)
       {
-        this.logger.error('Failed to create add sale record', error)
-        throw new BadRequestException('Failed to add sale');
+        this.logger.error('Failed to create bulk sale records', error)
+        throw new BadRequestException('Failed to add bulk sales');
       }
 
       return {
         success: true,
-        data: null,
+        data: {
+          insertedRecords: dtos.length
+        },
         message: 'Bulk sale records created successfully',
       }
     } catch (error) {
       throw error;
     }
+  }
+
+  
 }

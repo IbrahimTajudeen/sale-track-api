@@ -31,7 +31,7 @@ export class SalesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.USER)
   @ApiOperation({ summary: 'Create a new sale record' })
-  @ApiResponse({ status: 201, description: 'The sale record has been successfully created.' })
+  @ApiResponse({ status: 201, description: 'Sale record created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
@@ -43,17 +43,22 @@ export class SalesController {
     return result;
   }
 
-  @Get()
-  findAll(@User() user) {
-    return this.salesService.findAll(user.id);
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.USER)
+  @ApiOperation({ summary: 'Create multiple sale records in bulk' })
+  @ApiResponse({ status: 201, description: 'Bulk sale records created successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @ApiBody({ type: [CreateSaleDto], description: 'Array of data for creating new sale records' })
+  @Post('bulk')
+  async createBulk(@User() user: any, @Body() dtos: CreateSaleDto[]): Promise<SaleTrackApiResponse<{ insertedRecords: number }>> {
+    const result = await this.salesService.createBulkSales(user, dtos);
+    return result;
   }
 
-  @Put(':id')
-  update(
-    @User() user,
-    @Param('id') id: string,
-    @Body() dto: UpdateSaleDto,
-  ) {
-    return this.salesService.update(user.id, id, dto);
-  }
+  async getSales()
+
+  
 }
