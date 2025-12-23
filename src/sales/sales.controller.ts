@@ -77,6 +77,22 @@ export class SalesController {
   }
 
   @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.BOSS)
+  @ApiOperation({ summary: 'Retrieve sale record by id' })
+  @ApiResponse({ type: SaleTrackApiResponse<any>, status: 200, description: 'Sale record retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @ApiQuery({ type: FilterQuery, description: 'Filtering and pagination parameters' })
+  @Get(':id')
+  async getSaleId(@Param('id') saleId: string, @User() user: any): Promise<SaleTrackApiResponse<any>> {
+    // Implementation for retrieving sales records
+    const result = await this.salesService.getSaleById(user, saleId);
+    return result;
+  }
+
+  @UseGuards(RolesGuard)
   @Roles(UserRole.USER)
   @ApiOperation({ summary: 'Retrieve user sales records with optional filtering' })
   @ApiResponse({ type: SaleTrackApiPaginatedResponse<any>, status: 200, description: 'Sales records retrieved successfully' })
@@ -94,13 +110,13 @@ export class SalesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.USER)
   @ApiOperation({ summary: 'Retrieve user sales records by id' })
-  @ApiResponse({ type: SaleTrackApiPaginatedResponse<any>, status: 200, description: 'Sale record retrieved successfully' })
+  @ApiResponse({ type: SaleTrackApiResponse<any>, status: 200, description: 'Sale record retrieved successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   @Get('my-sales/:id')
-  async getMySales(@Param('id') saleId: string, @User() user: any) {
+  async getMySaleUsingId(@Param('id') saleId: string, @User() user: any): Promise<SaleTrackApiResponse<any>> {
     const result = await this.salesService.getMySaleById(user, saleId)
     return result;
   }

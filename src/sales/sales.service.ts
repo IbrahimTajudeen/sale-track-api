@@ -102,9 +102,9 @@ export class SalesService {
   async getSales(user: any, filterQuery: any) : Promise<SaleTrackApiPaginatedResponse<any>> {
     try {
       // Placeholder implementation
-      if(user.role as UserRole !== UserRole.ADMIN && user.role as UserRole !== UserRole.BOSS) {
-        this.logger.error(`User with ID ${user.id} and role ${user.role} attempted to retrieve sale records.`);
-        throw new Error('Only users with ADMIN or BOSS role can retrieve sales records.');
+      if(![UserRole.BOSS, UserRole.ADMIN].includes((user.role as UserRole))) {
+        this.logger.error('Only Admin or Boss are allowed to use this service')
+        throw new ForbiddenException('Only Admin and Boss are allow to use this service');
       }
 
       const { page = 1, limit = 10 } = filterQuery;
@@ -112,7 +112,17 @@ export class SalesService {
 
       let query = this.supabase.adminClient()
       .from('sales_records')
-      .select('*', { count: 'exact' });
+      .select(`
+        id,
+        user_id,
+        sale_date,
+        item_name,
+        price_per_item,
+        quantity,
+        total_amount,
+        notes,
+        user:users(id, username, first_name, last_name, phone, email)`,
+      { count: 'exact' });
       
       query = this.utils.applyFilters(query, filterQuery)
       
@@ -136,6 +146,64 @@ export class SalesService {
         totalPages: totalPages,
       };
 
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getSaleById(user: any, saleId: string): Promise<SaleTrackApiResponse<any>> {
+    try {
+      if(![UserRole.BOSS, UserRole.ADMIN].includes((user.role as UserRole))) {
+        this.logger.error('Only Admin or Boss are allowed to use this service')
+        throw new ForbiddenException('Only Admin and Boss are allow to use this service');
+      }
+
+      const { data, error } = await this.supabase.client()
+      .from('sales_records')
+      .select(`
+        id,
+        user_id,
+        sale_date,
+        item_name,
+        price_per_item,
+        quantity,
+        total_amount,
+        notes,
+        user:users(id, username, first_name, last_name, phone, email)`)
+      .eq('id', saleId)
+      .single() as unknown as {
+        data: {
+          id: string,
+          user_id: string,
+          sale_date: Date,
+          item_name: string,
+          price_per_item: number,
+          quantity: number,
+          total_amount: number,
+          notes: string,
+          user: {
+            id: string,
+            username: string,
+            first_name: string,
+            last_name: string,
+            phone: string,
+            email: string
+          }
+        }, error: any
+        
+      };
+
+      if(error) {
+        this.logger.error('Failed to get sale record', error)
+        throw new BadRequestException('Failed to fetch sale record')
+      }
+
+      return {
+        success: true,
+        data: data,
+        message: 'Sale record retrived successfully'
+      }
+        
     } catch (error) {
       throw error;
     }
