@@ -9,7 +9,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 // import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 
-export class ScorcheApiPaginatedResponse<T> {
+export class SaleTrackApiPaginatedResponse<T> {
     @ApiProperty({ example: true, description: 'Indicates if the request was successful' })
     success: boolean;
 
@@ -27,7 +27,7 @@ export class ScorcheApiPaginatedResponse<T> {
 
     @ApiProperty({ example: 100, description: 'The total number of items available' })
     totalItems: number | null;
-    
+
     @ApiProperty({ example: 10, description: 'The total number of pages available' })
     totalPages: number | null;
 }

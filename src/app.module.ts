@@ -9,11 +9,12 @@ import { SalesModule } from './sales/sales.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { AppConfigService } from './config/app-config';
 import { AuthModule } from './auth/auth.module';
+import { Utils } from './common/utils/utils';
 
 @Module({
   imports: [SupabaseModule, SalesModule, ReportsModule, PdfModule, MailModule, AuthModule],
   controllers: [AppController],
-  providers: [AppService, AppConfigService],
-  exports: [AppConfigService]
+  providers: [AppService, AppConfigService, Utils],
+  exports: [AppConfigService, Utils],
 })
 export class AppModule {}

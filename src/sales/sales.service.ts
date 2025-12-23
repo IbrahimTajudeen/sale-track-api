@@ -7,12 +7,18 @@ import { UpdateSaleDto } from './dto/update-sale.dto';
 import { UserRole } from 'src/common/types/user-role.type';
 import { SaleTrackApiResponse } from 'src/common/utils/api-response.util';
 import { SupabaseService } from 'src/supabase/supabase.service';
+import { SaleTrackApiPaginatedResponse } from 'src/common/utils/paginated-api-response.util';
+import { Utils } from 'src/common/utils/index.utils';
+import { NotFoundException } from '@nestjs/common';
 
 // sales/sales.service.ts
 @Injectable()
 export class SalesService {
   private readonly logger = new Logger(SalesService.name);
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor(
+    private readonly supabase: SupabaseService, 
+    private readonly utils: Utils
+  ) {}
 
   async createSales(user: any, dto: CreateSaleDto) : Promise<SaleTrackApiResponse<any>> {
     try {
@@ -86,6 +92,97 @@ export class SalesService {
         },
         message: 'Bulk sale records created successfully',
       }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getSales(user: any, filterQuery: any) : Promise<SaleTrackApiPaginatedResponse<any>> {
+    try {
+      // Placeholder implementation
+      if(user.role as UserRole !== UserRole.ADMIN && user.role as UserRole !== UserRole.BOSS) {
+        this.logger.error(`User with ID ${user.id} and role ${user.role} attempted to retrieve sale records.`);
+        throw new Error('Only users with ADMIN or BOSS role can retrieve sales records.');
+      }
+
+      const { page = 1, limit = 10 } = filterQuery;
+      const start = (page - 1) * limit, end = start + limit - 1;
+
+      let query = this.supabase.adminClient()
+      .from('sales_records')
+      .select('*', { count: 'exact' });
+      
+      query = this.utils.applyFilters(query, filterQuery)
+      
+      const { data, error, count } = await query
+      .range(start, end); // Pagination
+
+      if(error)
+      {
+        this.logger.error('Failed to retrieve sale records', error)
+        throw new BadRequestException('Failed to retrieve sales');
+      }
+
+      const totalItems = count || 0;
+      const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
+      return {
+        success: true,
+        data: data || [],
+        currentPage: page,
+        pageSize: limit,
+        totalItems: totalItems,
+        totalPages: totalPages,
+      };
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getMySales(user: any, filterQuery: any) : Promise<SaleTrackApiPaginatedResponse<any>> {
+    try {
+
+      if(!user.id) {
+        this.logger.error(`User not found.\nUser: ${JSON.stringify(user)}`)
+        throw new NotFoundException('User not found');
+      }
+
+      // Placeholder implementation
+      if(user.role as UserRole !== UserRole.USER) {
+        this.logger.error(`User with ID ${user.id} and role ${user.role} attempted to retrieve their sale records.`);
+        throw new Error('Only users with USER role can retrieve their sales records.');
+      }
+
+      const { page = 1, limit = 10 } = filterQuery;
+      const start = (page - 1) * limit, end = start + limit - 1;
+
+      let query = this.supabase.adminClient()
+      .from('sales_records')
+      .select('*', { count: 'exact' });
+      
+      query = this.utils.applyFilters(query, filterQuery)
+      
+      const { data, error, count } = await query
+      .eq('user_id', user.id)
+      .range(start, end); // Pagination
+
+      if(error)
+      {
+        this.logger.error('Failed to retrieve user sales records', error)
+        throw new BadRequestException('Failed to retrieve user sales');
+      }
+
+      const totalItems = count || 0;
+      const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
+      return {
+        success: true,
+        data: data || [],
+        currentPage: page,
+        pageSize: limit,
+        totalItems: totalItems,
+        totalPages: totalPages,
+      };
+
     } catch (error) {
       throw error;
     }

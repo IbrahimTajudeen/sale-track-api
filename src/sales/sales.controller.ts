@@ -15,11 +15,11 @@ import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { SupabaseAuthGuard } from 'src/common/guards/supabase.guard'; ;
 import { User } from 'src/common/decorators/user.decorator';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserRole } from 'src/common/types/user-role.type';
 import { Roles } from 'src/common/decorators/role.decorator';
-import { SaleTrackApiResponse } from 'src/common/utils/api-response.util';
+import { SaleTrackApiResponse, SaleTrackApiPaginatedResponse } from 'src/common/utils/index.utils';
 import { FilterQuery } from 'src/common/types/filter-query.type';
 
 
@@ -33,7 +33,7 @@ export class SalesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.USER)
   @ApiOperation({ summary: 'Create a new sale record' })
-  @ApiResponse({ status: 201, description: 'Sale record created successfully' })
+  @ApiResponse({ type: SaleTrackApiResponse<any>, status: 201, description: 'Sale record created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
@@ -60,16 +60,43 @@ export class SalesController {
     return result;
   }
 
-
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.BOSS)
+  @ApiOperation({ summary: 'Retrieve sales records with optional filtering' })
+  @ApiResponse({ type: SaleTrackApiPaginatedResponse<any>, status: 200, description: 'Sales records retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @ApiQuery({ type: FilterQuery, description: 'Filtering and pagination parameters' })
   @Get()
-  async getSales(@Query() filterQuery: FilterQuery): Promise<SaleTrackApiResponse<any>> {
+  async getSales(@Query() filterQuery: FilterQuery, @User() user: any): Promise<SaleTrackApiPaginatedResponse<any>> {
     // Implementation for retrieving sales records
-    return {
-      success: true,
-      data: null,
-      message: 'Get sales not implemented yet',
-    };
+    const result = await this.salesService.getSales(user, filterQuery);
+    return result;
   }
+
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.USER)
+  @ApiOperation({ summary: 'Retrieve user sales records with optional filtering' })
+  @ApiResponse({ type: SaleTrackApiPaginatedResponse<any>, status: 200, description: 'Sales records retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @ApiQuery({ type: FilterQuery, description: 'Filtering and pagination parameters' })
+  @Get('my-sales')
+  async getMySales(@Query() filterQuery: FilterQuery, @User() user: any) {
+    const result = await this.salesService.getMySales(User, filterQuery)
+    return result;
+  }
+
+  @Put('update/:saleId')
+  async updateSale(@Param('saleId') saleId: string, @User() user: any, @Body() dto: UpdateSaleDto)
+  {
+    const result = await this.salesService.updateSale(user, saleId, dto)    
+  }
+
 
 }
 
