@@ -10,6 +10,8 @@ import { SupabaseService } from 'src/supabase/supabase.service';
 import { SaleTrackApiPaginatedResponse } from 'src/common/utils/paginated-api-response.util';
 import { Utils } from 'src/common/utils/index.utils';
 import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 
 // sales/sales.service.ts
 @Injectable()
@@ -188,5 +190,80 @@ export class SalesService {
     }
   }
 
-  
+  async updateSale(user: any, saleId: string, dto: UpdateSaleDto): Promise<SaleTrackApiResponse<any>>{
+    try {
+      if(user.role as UserRole !== UserRole.USER){
+        this.logger.error(`Failed, only a user can update sale record`)
+        throw new ForbiddenException('Failed, Only users can update sale record')
+      }
+
+      const { data, error } = await this.supabase.client()
+      .from('sales_records')
+      .select(`
+        id,
+        user_id,
+        sale_date,
+        item_name,
+        price_per_item,
+        quantity,
+        total_amount,
+        notes,`)
+      .eq('id', saleId)
+      .single() as unknown as {
+        data: {
+          id: string,
+          user_id: string,
+          sale_date: Date,
+          item_name: string,
+          price_per_item: number,
+          quantity: number,
+          total_amount: number,
+          notes: string
+        }, error: any
+        
+      };
+
+      if(error) { 
+        this.logger.error('failed to get sale record')
+        throw new BadRequestException('Failed to get sale record')
+      }
+
+      if(data.user_id !== user.id) {
+        this.logger.error('You can only edit sales created by you')
+        throw new UnauthorizedException(`You can only edit sales created by you`)
+      }
+
+      const record = {
+        id: saleId,
+        user_id: user.id,
+        sale_date: dto.saleDate,
+        item_name: dto.itemName,
+        price_per_item: dto.pricePerItem,
+        quantity: dto.quantity,
+        total_amount: dto.pricePerItem * dto.quantity,
+        notes: dto.notes
+      }
+
+      const { error: updateError } = await this.supabase.client()
+      .from('sales_records')
+      .update(record)
+
+      if(updateError) {
+        this.logger.error(`Failed to update sale record`, error)
+        throw new BadRequestException('Failed to update sale record')
+      }
+
+      return {
+        success: true,
+        data: {
+          itemName: dto.itemName,
+          saleDate:  dto.saleDate
+        },
+        message: 'Sale record updated successfully'
+      }
+
+    } catch (error) {
+      throw error;
+    }
+  }
 }

@@ -15,7 +15,7 @@ import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { SupabaseAuthGuard } from 'src/common/guards/supabase.guard'; ;
 import { User } from 'src/common/decorators/user.decorator';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserRole } from 'src/common/types/user-role.type';
 import { Roles } from 'src/common/decorators/role.decorator';
@@ -91,10 +91,21 @@ export class SalesController {
     return result;
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.USER)
+  @ApiOperation({ summary: 'Update user sale record' })
+  @ApiResponse({ type: SaleTrackApiResponse<any>, status: 200, description: 'Sale record updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @ApiParam({ name: 'saleId', type: 'string', description: 'Id of the sale record to updated' })
+  @ApiBody({ type: UpdateSaleDto, description: 'Update sale payload' })
   @Put('update/:saleId')
-  async updateSale(@Param('saleId') saleId: string, @User() user: any, @Body() dto: UpdateSaleDto)
+  async updateSale(@Param('saleId') saleId: string, @User() user: any, @Body() dto: UpdateSaleDto): Promise<SaleTrackApiResponse<any>>
   {
     const result = await this.salesService.updateSale(user, saleId, dto)    
+    return result;
   }
 
 

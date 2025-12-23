@@ -33,4 +33,11 @@ export class CreateSaleDto {
   @IsInt()
   @Min(1)
   quantity: number;
+
+  @ApiProperty({
+    description: 'Short description about the sales',
+    example: 'Some random sale description',
+  })
+  @IsString()
+  notes: string;
 }
