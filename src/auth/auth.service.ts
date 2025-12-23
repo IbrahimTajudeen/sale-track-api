@@ -10,7 +10,7 @@ import {
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { SupabaseService } from 'src/supabase/supabase.service';
-import { SignUpDto } from './dto/index.dto';
+import { SignInDto, SignUpDto } from './dto/index.dto';
 import { UserRole } from 'src/common/types/user-role.type';
 import { SaleTrackApiResponse } from 'src/common/utils/api-response.util';
 
@@ -66,12 +66,12 @@ export class AuthService {
     }
   }
 
-    async signIn(email: string, password: string): Promise<SaleTrackApiResponse<any>> {
+    async signIn(signIn: SignInDto): Promise<SaleTrackApiResponse<any>> {
       try{
         const { data, error } = await this.supabase.client()
         .auth.signInWithPassword({
-          email,
-          password,
+          email: signIn.email,
+          password: signIn.password,
         });
 
         if (error) throw new UnauthorizedException(error.message);
