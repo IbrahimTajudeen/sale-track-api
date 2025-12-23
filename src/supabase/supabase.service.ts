@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSupabaseDto } from './dto/create-supabase.dto';
-import { UpdateSupabaseDto } from './dto/update-supabase.dto';
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
+import { Injectable, Logger } from '@nestjs/common';
+import { AppConfigService } from 'src/config/app-config';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class SupabaseService {
-  create(createSupabaseDto: CreateSupabaseDto) {
-    return 'This action adds a new supabase';
+  private readonly logger = new Logger(SupabaseService.name);
+  private supabaseClient: SupabaseClient;
+  private supabaseAdminClient: SupabaseClient;
+
+  constructor(private readonly configService: AppConfigService) {
+
+    const supabaseConfig = this.configService.supabase as {
+      url: string;
+      anonKey: string;
+      serviceRoleKey: string;
+    };
+
+    this.supabaseClient = createClient(supabaseConfig.url, supabaseConfig.anonKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      }
+    });
+    
+    this.supabaseAdminClient = createClient(supabaseConfig.url, supabaseConfig.serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      }
+    });
+
+    this.logger.log('Supabase clients initialized');
   }
 
-  findAll() {
-    return `This action returns all supabase`;
+  client(): SupabaseClient {
+    return this.supabaseClient;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} supabase`;
+  adminClient(): SupabaseClient {
+    return this.supabaseAdminClient;
   }
 
-  update(id: number, updateSupabaseDto: UpdateSupabaseDto) {
-    return `This action updates a #${id} supabase`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} supabase`;
-  }
 }
