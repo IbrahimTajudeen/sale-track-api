@@ -1,6 +1,7 @@
+import { CommonModule } from './common/common.module';
 /* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MailModule } from './mail/mail.module';
@@ -14,11 +15,15 @@ import { Utils } from './common/utils/utils';
 
 @Module({
   imports: [
-    SupabaseModule, SalesModule, ReportsModule, PdfModule, MailModule, AuthModule,
+    SalesModule,
+    ReportsModule,
+    PdfModule,
+    MailModule,
+    AuthModule,
     ConfigModule.forRoot({ isGlobal: true }), // Load .env globally
   ],
   controllers: [AppController],
-  providers: [AppService, AppConfigService, Utils],
-  exports: [AppConfigService, Utils],
+  providers: [AppService, Utils],
+  exports: [Utils],
 })
 export class AppModule {}

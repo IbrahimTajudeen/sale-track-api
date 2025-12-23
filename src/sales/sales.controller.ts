@@ -23,7 +23,7 @@ import { SaleTrackApiResponse, SaleTrackApiPaginatedResponse } from 'src/common/
 import { FilterQuery } from 'src/common/types/filter-query.type';
 
 
-@ApiTags('VTU')
+@ApiTags('Sales')
 @ApiBearerAuth('access-token')
 @Controller('sales')
 @UseGuards(SupabaseAuthGuard)

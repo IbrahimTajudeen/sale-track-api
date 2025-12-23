@@ -17,7 +17,7 @@ import { AppConfigService } from 'src/config/app-config';
 import { SupabaseService } from 'src/supabase/supabase.service';
 
 @Injectable()
-export class SupabaseAuthGuard implements CanActivate {
+export class SupabaseAuthGuard implements CanActivate { 
   constructor(private supabaseService: SupabaseService, private configService: AppConfigService) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
