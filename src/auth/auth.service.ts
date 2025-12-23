@@ -25,6 +25,7 @@ export class AuthService {
         this.logger.error('Bad auth code');
         throw new BadRequestException('Invalid auth code')
       }
+
       const role = (signUpDto.authCode && signUpDto.authCode == 'something') ? UserRole.BOSS :  UserRole.USER;
 
       const { error } = await this.supabase.adminClient()
@@ -64,5 +65,28 @@ export class AuthService {
       throw error;
     }
   }
+
+    async signIn(email: string, password: string): Promise<SaleTrackApiResponse<any>> {
+      try{
+        const { data, error } = await this.supabase.client()
+        .auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw new UnauthorizedException(error.message);
+    
+        return {
+          success: true,
+          data: {
+            ...data
+          },
+          message: 'Login successfully'
+        };
+      } catch (error) {
+        throw error;
+      }
+    }
+  
 
 }
