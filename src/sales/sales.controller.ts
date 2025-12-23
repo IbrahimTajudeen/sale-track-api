@@ -8,6 +8,7 @@ import {
   Put,
   Param,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
@@ -19,6 +20,7 @@ import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserRole } from 'src/common/types/user-role.type';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { SaleTrackApiResponse } from 'src/common/utils/api-response.util';
+import { FilterQuery } from 'src/common/types/filter-query.type';
 
 
 @ApiTags('VTU')
@@ -46,7 +48,7 @@ export class SalesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.USER)
   @ApiOperation({ summary: 'Create multiple sale records in bulk' })
-  @ApiResponse({ status: 201, description: 'Bulk sale records created successfully' })
+  @ApiResponse({ type: SaleTrackApiResponse<{ insertedRecords: number }>, status: 201, description: 'Bulk sale records created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
@@ -58,7 +60,16 @@ export class SalesController {
     return result;
   }
 
-  async getSales()
 
-  
+  @Get()
+  async getSales(@Query() filterQuery: FilterQuery): Promise<SaleTrackApiResponse<any>> {
+    // Implementation for retrieving sales records
+    return {
+      success: true,
+      data: null,
+      message: 'Get sales not implemented yet',
+    };
+  }
+
 }
+
