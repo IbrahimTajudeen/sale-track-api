@@ -190,6 +190,60 @@ export class SalesService {
     }
   }
 
+  async getMySaleById(user: any, saleId: string): Promise<SaleTrackApiResponse<any>> {
+    try { 
+      if(user.role as UserRole !== UserRole.USER){
+        this.logger.error(`Failed, only a user access this service`)
+        throw new ForbiddenException('Failed, Only users can access this service')
+      }
+
+      const { data, error } = await this.supabase.client()
+      .from('sales_records')
+      .select(`
+        id,
+        user_id,
+        sale_date,
+        item_name,
+        price_per_item,
+        quantity,
+        total_amount,
+        notes,`)
+      .eq('id', saleId)
+      .single() as unknown as {
+        data: {
+          id: string,
+          user_id: string,
+          sale_date: Date,
+          item_name: string,
+          price_per_item: number,
+          quantity: number,
+          total_amount: number,
+          notes: string
+        }, error: any
+        
+      };
+
+      if(error) {
+        this.logger.error('Failed to get sale record', error)
+        throw new BadRequestException('Failed to fetch sale record')
+      }
+
+      if(data.user_id !== user.id) {
+        this.logger.error('You are forbidden to access this sale record')
+        throw new ForbiddenException('User forbidden to access sale record')
+      }
+
+      return {
+        success: true,
+        data: data,
+        message: 'Sale record retrived successfully'
+      }
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async updateSale(user: any, saleId: string, dto: UpdateSaleDto): Promise<SaleTrackApiResponse<any>>{
     try {
       if(user.role as UserRole !== UserRole.USER){

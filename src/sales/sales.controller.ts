@@ -87,7 +87,21 @@ export class SalesController {
   @ApiQuery({ type: FilterQuery, description: 'Filtering and pagination parameters' })
   @Get('my-sales')
   async getMySales(@Query() filterQuery: FilterQuery, @User() user: any) {
-    const result = await this.salesService.getMySales(User, filterQuery)
+    const result = await this.salesService.getMySales(user, filterQuery)
+    return result;
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.USER)
+  @ApiOperation({ summary: 'Retrieve user sales records by id' })
+  @ApiResponse({ type: SaleTrackApiPaginatedResponse<any>, status: 200, description: 'Sale record retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Get('my-sales/:id')
+  async getMySales(@Param('id') saleId: string, @User() user: any) {
+    const result = await this.salesService.getMySaleById(user, saleId)
     return result;
   }
 
