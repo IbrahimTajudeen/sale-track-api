@@ -18,6 +18,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nes
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserRole } from 'src/common/types/user-role.type';
 import { Roles } from 'src/common/decorators/role.decorator';
+import { SaleTrackApiResponse } from 'src/common/utils/api-response.util';
 
 
 @ApiTags('VTU')
@@ -37,8 +38,9 @@ export class SalesController {
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   @ApiBody({ type: CreateSaleDto, description: 'Data for creating a new sale record' })
   @Post()
-  create(@User() user: any, @Body() dto: CreateSaleDto) {
-    return this.salesService.create(user, dto);
+  async create(@User() user: any, @Body() dto: CreateSaleDto): Promise<SaleTrackApiResponse<any>> {
+    const result = await this.salesService.createSales(user, dto);
+    return result;
   }
 
   @Get()

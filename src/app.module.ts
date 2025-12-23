@@ -8,9 +8,10 @@ import { ReportsModule } from './reports/reports.module';
 import { SalesModule } from './sales/sales.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { AppConfigService } from './config/app-config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [SupabaseModule, SalesModule, ReportsModule, PdfModule, MailModule],
+  imports: [SupabaseModule, SalesModule, ReportsModule, PdfModule, MailModule, AuthModule],
   controllers: [AppController],
   providers: [AppService, AppConfigService],
   exports: [AppConfigService]
