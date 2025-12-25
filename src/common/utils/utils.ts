@@ -4,6 +4,7 @@ https://docs.nestjs.com/providers#services
 */
 
 import { Injectable } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class Utils {
     roundUpToHundred(num: number): number {
@@ -60,5 +61,8 @@ export class Utils {
 
         return `users/${userId}/documents/${category}/${year}/${month}/${fileName}`;
     }
+
+    generateShortGuid = (): string => uuidv4().split('-')[0];
+    generateRequestId = (id: string): string => `SCORCHE-PAY-${id}-${this.generateShortGuid().toUpperCase()}-${Date.now()}`;
 
 }
