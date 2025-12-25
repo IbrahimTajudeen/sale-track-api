@@ -23,6 +23,7 @@ interface Smtp {
 }
 
 interface ApiVerve {
+    url: string;
     apiKey: string;
 }
 
@@ -42,6 +43,13 @@ export class AppConfigService {
             jwtAudience: this.configService.get<string>('SUPABASE_JWT_AUDIENCE', 'authenticated'),
             jwtSecret: this.configService.get<string>('SUPABASE_JWT_SECRET', ''),
             projectId: this.configService.get<string>('SUPABASE_PROJECT_ID', ''),
+        };
+    }
+
+    get apiVerve(): ApiVerve {
+        return {
+            url: this.configService.get<string>('APIVERVE_URL',''),
+            apiKey: this.configService.get<string>('APIVERVE_API_KEY','')
         };
     }
 }
