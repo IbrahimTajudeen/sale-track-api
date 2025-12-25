@@ -13,6 +13,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { SupabaseService } from 'src/supabase/supabase.service';
 import { UserRole } from '../types/user-role.type';
+import { ROLES_KEY } from '../decorators/role.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -24,7 +25,7 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>('roles', [
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -32,7 +33,7 @@ export class RolesGuard implements CanActivate {
     // this.logger.log(`Required roles: ${requiredRoles.join(', ')}`);
 
     if (!requiredRoles) {
-      return true;
+      return await Promise.resolve(true);
     }
 
     const request = context.switchToHttp().getRequest();
@@ -43,10 +44,8 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    const userRole = user.user_metadata?.role || user.app_metadata?.role;
-
-    // this.logger.log(`User role: ${userRole}`);
-
+    const userRole = user?.user_metadata?.role ?? user?.app_metadata?.role ?? user?.role;
+    
     const hasRole = requiredRoles.some((role) => userRole === role);
 
     if (!hasRole) {
@@ -55,6 +54,6 @@ export class RolesGuard implements CanActivate {
       );
     }
 
-    return true;
+    return await Promise.resolve(true);
   }
 }

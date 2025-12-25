@@ -5,10 +5,9 @@ https://docs.nestjs.com/modules
 
 import { Module } from '@nestjs/common';
 import { AppConfigService } from './app-config';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
-    imports: [ConfigModule.forRoot({ isGlobal: true })],
+    imports: [],
     providers: [AppConfigService],
     exports: [AppConfigService]
 })

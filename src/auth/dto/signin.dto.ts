@@ -7,13 +7,13 @@ export class SignInDto {
         example: 'donslice6@gmail.com',
         description: 'User\'s verified email'
     })
-    @IsString();
+    @IsString()
     email: string;
 
     @ApiProperty({
         example: 'password',
         description: 'User\'s password'
     })
-    @IsString();
+    @IsString()
     password: string;
 }

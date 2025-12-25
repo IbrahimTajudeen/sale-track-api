@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable no-useless-catch */
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { UserRole } from 'src/common/types/user-role.type';
@@ -32,7 +32,7 @@ export class SalesService {
       const total = dto.pricePerItem * dto.quantity;
       const userId = user.id;
     
-      const { error } = await this.supabase.client()
+      const { error } = await this.supabase.adminClient()
       .from('sales_records')
       .insert({
         user_id: userId,
@@ -77,7 +77,7 @@ export class SalesService {
         total_amount: dto.pricePerItem * dto.quantity,
       }));
     
-      const { error } = await this.supabase.client()
+      const { error } = await this.supabase.adminClient()
       .from('sales_records')
       .insert(records);
 
@@ -121,7 +121,7 @@ export class SalesService {
         quantity,
         total_amount,
         notes,
-        user:users(id, username, first_name, last_name, phone, email)`,
+        user:users (id, raw_user_meta_data)`,
       { count: 'exact' });
       
       query = this.utils.applyFilters(query, filterQuery)
@@ -135,11 +135,29 @@ export class SalesService {
         throw new BadRequestException('Failed to retrieve sales');
       }
 
+      const result = data.map(sale => {
+        const userRecord = Array.isArray(sale.user) ? sale.user[0] : sale.user;
+        const metadata = userRecord?.raw_user_meta_data || {};
+
+        return ({
+          ...sale,
+          user: {
+            id: userRecord?.id || sale.user_id,
+            firstname: metadata.firstname || '',
+            lastname: metadata.lastname || '',
+            email: metadata.email || '',
+            username: metadata.username || '',
+            phone: metadata.phone || ''
+          }
+        })
+      });
+
+
       const totalItems = count || 0;
       const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
       return {
         success: true,
-        data: data || [],
+        data: result || [],
         currentPage: page,
         pageSize: limit,
         totalItems: totalItems,
@@ -158,7 +176,7 @@ export class SalesService {
         throw new ForbiddenException('Only Admin and Boss are allow to use this service');
       }
 
-      const { data, error } = await this.supabase.client()
+      const { data, error } = await this.supabase.adminClient()
       .from('sales_records')
       .select(`
         id,
@@ -218,9 +236,9 @@ export class SalesService {
       }
 
       // Placeholder implementation
-      if(user.role as UserRole !== UserRole.USER) {
+      if(![UserRole.USER].includes((user.role as UserRole))) {
         this.logger.error(`User with ID ${user.id} and role ${user.role} attempted to retrieve their sale records.`);
-        throw new Error('Only users with USER role can retrieve their sales records.');
+        throw new ForbiddenException('Only users with USER role can retrieve their sales records.');
       }
 
       const { page = 1, limit = 10 } = filterQuery;
@@ -265,7 +283,7 @@ export class SalesService {
         throw new ForbiddenException('Failed, Only users can access this service')
       }
 
-      const { data, error } = await this.supabase.client()
+      const { data, error } = await this.supabase.adminClient()
       .from('sales_records')
       .select(`
         id,
@@ -275,9 +293,9 @@ export class SalesService {
         price_per_item,
         quantity,
         total_amount,
-        notes,`)
+        notes`)  
       .eq('id', saleId)
-      .single() as unknown as {
+      .maybeSingle() as unknown as {
         data: {
           id: string,
           user_id: string,
@@ -287,13 +305,17 @@ export class SalesService {
           quantity: number,
           total_amount: number,
           notes: string
-        }, error: any
-        
+        }, error: any 
       };
 
       if(error) {
         this.logger.error('Failed to get sale record', error)
         throw new BadRequestException('Failed to fetch sale record')
+      }
+
+      if(!data) {
+        this.logger.error('Sale record not found')
+        throw new NotFoundException('Sale record not found');
       }
 
       if(data.user_id !== user.id) {
@@ -315,8 +337,8 @@ export class SalesService {
   async updateSale(user: any, saleId: string, dto: UpdateSaleDto): Promise<SaleTrackApiResponse<any>>{
     try {
       if(user.role as UserRole !== UserRole.USER){
-        this.logger.error(`Failed, only a user can update sale record`)
-        throw new ForbiddenException('Failed, Only users can update sale record')
+        this.logger.error(`Failed, only a user access this service`)
+        throw new ForbiddenException('Failed, Only users can access this service')
       }
 
       if(!dto.quantity || !dto.pricePerItem) {
@@ -324,7 +346,7 @@ export class SalesService {
         throw new BadRequestException('Both the field quantity and price per item are required')
       }
 
-      const { data, error } = await this.supabase.client()
+      const { data, error } = await this.supabase.adminClient()
       .from('sales_records')
       .select(`
         id,
@@ -334,9 +356,9 @@ export class SalesService {
         price_per_item,
         quantity,
         total_amount,
-        notes,`)
+        notes`)
       .eq('id', saleId)
-      .single() as unknown as {
+      .maybeSingle() as unknown as {
         data: {
           id: string,
           user_id: string,
@@ -347,12 +369,16 @@ export class SalesService {
           total_amount: number,
           notes: string
         }, error: any
-        
       };
 
       if(error) { 
-        this.logger.error('failed to get sale record')
+        this.logger.error('failed to get sale record', error)
         throw new BadRequestException('Failed to get sale record')
+      }
+
+      if(!data) {
+        this.logger.error(`Sales not found for update: ${saleId}`, data)
+        throw new NotFoundException('Sale not found')
       }
 
       if(data.user_id !== user.id) {
@@ -371,9 +397,10 @@ export class SalesService {
         notes: dto.notes
       }
 
-      const { error: updateError } = await this.supabase.client()
+      const { error: updateError } = await this.supabase.adminClient()
       .from('sales_records')
       .update(record)
+      .eq('id', saleId)
 
       if(updateError) {
         this.logger.error(`Failed to update sale record`, error)
@@ -387,6 +414,56 @@ export class SalesService {
           saleDate:  dto.saleDate
         },
         message: 'Sale record updated successfully'
+      }
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteMySale(user: any, saleId: string) : Promise<SaleTrackApiResponse<any>> {
+    try {
+      if(![UserRole.USER].includes(user.role)) {
+        this.logger.error(`Failed, only a user access this service`)
+        throw new ForbiddenException('Failed, Only users can access this service')
+      }
+
+      const { data: findData, error: findError } = await this.supabase.adminClient()
+      .from('sales_records')
+      .select(`id, user_id, item_name`)
+      .eq('id', saleId)
+      .maybeSingle()
+
+      if(findError) {
+        this.logger.error('Unknown error occured', findError)
+        throw new InternalServerErrorException('Unknown error occured')
+      }
+
+      if(!findData) {
+        this.logger.error(`Unable to find sale record`, findError)
+        throw new NotFoundException('Unable to find sale record')
+      }
+
+      if(findData?.user_id !== user.id) {
+        this.logger.error('Not authorize to perform this action')
+        throw new UnauthorizedException('Not authorize to perform this action')
+      }
+
+      const { data, error } = await this.supabase.adminClient()
+      .from('sales_records')
+      .delete()
+      .eq('id', saleId)
+      .select('item_name, quantity, total_amount, price_per_item, sale_date')
+
+      if(error) {
+        this.logger.error('Failed to delete sale item', error)
+        throw new InternalServerErrorException('An error occured')
+      }
+
+      return {
+        success: true,
+        data,
+        message: 'Record deleted successfully'
       }
 
     } catch (error) {

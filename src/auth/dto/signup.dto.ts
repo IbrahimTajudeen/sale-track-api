@@ -27,26 +27,26 @@ export class SignUpDto {
     lastname: string;
 
     @ApiProperty({
-        example: 'courtyard-32xcGdxuqw',
+        example: '', // 'courtyard-32xcGdxuqw',
         description: 'An optional code that suggest the level of user Role'
     })
-    @IsString();
-    @IsOptional();
+    @IsString()
+    @IsOptional()
     authCode: string;
 
     @ApiProperty({
         example: 'NexoCode',
         description: 'A Unique username for the newly created user'
     })
-    @IsString();
+    @IsString()
     username: string;
 
     @ApiProperty({
         example: '08132166576',
         description: 'User\s phone number'
     })
-    @IsString();
-    @IsPhoneNumber();
+    @IsString()
+    @IsPhoneNumber()
     phone: string;
 
     @ApiProperty({

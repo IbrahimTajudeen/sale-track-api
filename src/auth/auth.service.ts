@@ -66,27 +66,40 @@ export class AuthService {
     }
   }
 
-    async signIn(signIn: SignInDto): Promise<SaleTrackApiResponse<any>> {
-      try{
-        const { data, error } = await this.supabase.client()
-        .auth.signInWithPassword({
-          email: signIn.email,
-          password: signIn.password,
-        });
+  async signIn(signIn: SignInDto): Promise<SaleTrackApiResponse<any>> {
+    try{
+      const { data, error } = await this.supabase.client()
+      .auth.signInWithPassword({
+        email: signIn.email,
+        password: signIn.password,
+      });
 
-        if (error) throw new UnauthorizedException(error.message);
-    
-        return {
-          success: true,
-          data: {
-            ...data
-          },
-          message: 'Login successfully'
-        };
-      } catch (error) {
-        throw error;
+      if (error) throw new UnauthorizedException(error.message);
+
+      const response = {
+        email: data.user.user_metadata.email,
+        firstName: data.user.user_metadata.firstname,
+        lastName: data.user.user_metadata.lastname,
+        phone: data.user.user_metadata.phone,
+        role: data.user.user_metadata.role,
+        username: data.user.user_metadata.email,
+        session: {
+          token: data.session.access_token,
+          refreshToken: data.session.refresh_token
+        }
       }
+  
+      return {
+        success: true,
+        data: {
+          ...response
+        },
+        message: 'Login successfully'
+      };
+    } catch (error) {
+      throw error;
     }
+  }
   
 
 }
