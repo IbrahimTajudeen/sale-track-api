@@ -14,7 +14,7 @@ export class ReportsController {
 
   @Post('create-report')
   async createReport(@Body() dto: CreateReportDto, @User() user: any): Promise<SaleTrackApiResponse<any>> {
-    const result = await this.reportsService.create()
+    return await this.reportsService.create(dto, user);
   }
 
 }
