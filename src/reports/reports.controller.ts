@@ -1,35 +1,20 @@
-import { Controller } from '@nestjs/common';
-// import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller, Post, UseGuards, Body } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { SaleTrackApiResponse } from 'src/common/utils/index.utils';
+import { User } from 'src/common/decorators/user.decorator';
+import { SupabaseAuthGuard } from 'src/common/guards/supabase.guard';
 
+@UseGuards(SupabaseAuthGuard)
 @Controller()
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  // @MessagePattern('createReport')
-  // create(@Payload() createReportDto: CreateReportDto) {
-  //   return this.reportsService.create(createReportDto);
-  // }
 
-  // @MessagePattern('findAllReports')
-  // findAll() {
-  //   return this.reportsService.findAll();
-  // }
+  @Post('create-report')
+  async createReport(@Body() dto: CreateReportDto, @User() user: any): Promise<SaleTrackApiResponse<any>> {
+    const result = await this.reportsService.create()
+  }
 
-  // @MessagePattern('findOneReport')
-  // findOne(@Payload() id: number) {
-  //   return this.reportsService.findOne(id);
-  // }
-
-  // @MessagePattern('updateReport')
-  // update(@Payload() updateReportDto: UpdateReportDto) {
-  //   return this.reportsService.update(updateReportDto.id, updateReportDto);
-  // }
-
-  // @MessagePattern('removeReport')
-  // remove(@Payload() id: number) {
-  //   return this.reportsService.remove(id);
-  // }
 }

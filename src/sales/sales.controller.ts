@@ -7,6 +7,7 @@ import {
   Body,
   Get,
   Put,
+  Delete,
   Param,
   UseGuards,
   Query,
@@ -117,7 +118,7 @@ export class SalesController {
   @ApiOperation({ summary: 'Update user sale record' })
   @ApiParam({ name: 'saleId', type: 'string' })
   @ApiBody({ type: UpdateSaleDto })
-  @Put('delete/:saleId')
+  @Delete('delete/:saleId')
   async deleteSale(
     @Param('saleId') saleId: string,
     @User() user: any,
@@ -150,7 +151,7 @@ export class SalesController {
   @Roles(UserRole.ADMIN, UserRole.BOSS)
   @ApiOperation({ summary: 'Retrieve sale record by id (admin)' })
   @ApiResponse({ type: SaleTrackApiResponse<any>, status: 200 })
-  @Get(':id')
+  @Get('admin/get-sales/:id')
   async getSaleId(
     @Param('id') saleId: string,
     @User() user: any,
