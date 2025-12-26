@@ -53,16 +53,26 @@ export class Utils {
     supabaseBucketPathBuilder(
         userId: string,
         category: "receipts" | "invoices" | "statements",
+        // from: Date,
+        // to: Date,
         fileName: string)
     {
+        // const fromTime = `${String(from.getMonth()).padStart(2, "0")}-${String(from.getFullYear())}` ;
+        // const toTime = `${String(to.getMonth()).padStart(2, "0")}-${String(to.getFullYear())}` ;
+
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, "0");
 
-        return `users/${userId}/documents/${category}/${year}/${month}/${fileName}`;
+        
+        return `users/${userId}/record/${year}-${month}/${fileName}`;
     }
 
     generateShortGuid = (): string => uuidv4().split('-')[0];
-    generateRequestId = (id: string): string => `SCORCHE-PAY-${id}-${this.generateShortGuid().toUpperCase()}-${Date.now()}`;
+    generateRequestId (id: string, from: Date, to: Date): string {
+        const fromTime = `${String(from.getMonth()).padStart(2, "0")}-${String(from.getFullYear())}` ;
+        const toTime = `${String(to.getMonth()).padStart(2, "0")}-${String(to.getFullYear())}` ;
+        return `SALE-TRACK-${id}-${this.generateShortGuid().toUpperCase()}-${fromTime}_${toTime}`;
+    }
 
 }

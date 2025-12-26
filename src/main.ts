@@ -5,6 +5,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.fitler';
 import { Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
+import { ValidationPipe } from '@nestjs/common';
 
 dotenv.config();
 const logger = new Logger('Bootstrap Entry Point');
@@ -13,6 +14,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+
 
   // app.useGlobalGuards(new JwtAuthGuard());
   

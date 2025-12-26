@@ -9,14 +9,16 @@ import { ReportsModule } from './reports/reports.module';
 import { SalesModule } from './sales/sales.module';
 import { AuthModule } from './auth/auth.module';
 import { Utils } from './common/utils/utils';
+import { SupabaseModule } from 'src/supabase/supabase.module';
 
 @Module({
   imports: [
+    AuthModule,
     SalesModule,
     ReportsModule,
     PdfModule,
     MailModule,
-    AuthModule,
+    SupabaseModule,
     ConfigModule.forRoot({ isGlobal: true }), // Load .env globally
   ],
   controllers: [AppController],

@@ -3,29 +3,37 @@ import { Injectable, Logger, BadRequestException, InternalServerErrorException }
 import { SaleTrackApiResponse } from 'src/common/utils/api-response.util';
 import { AppConfigService } from 'src/config/app-config';
 import { SupabaseService } from 'src/supabase/supabase.service'
+import { Utils } from 'src/common/utils/index.utils';
+import axios from 'axios';
 
 @Injectable()
 export class PdfService {
   private readonly apiKey: string;
   private readonly baseUrl: string; // = 'https://api.apiverve.com/v1';
-  private readonly logger = new Logger(PdfService.apply);
+  private readonly logger = new Logger(PdfService.name);
 
   constructor(
     private readonly appConfig: AppConfigService,
-    private readonly supabase: SupabaseService
+    private readonly supabase: SupabaseService,
+    private readonly utils: Utils
   ) {
     const { url, apiKey } = this.appConfig.apiVerve;
     this.apiKey = url; 
     this.baseUrl = apiKey;
   }
 
-  async htmlToPdfAndSave(htmlContent: string, user: any ): Promise<SaleTrackApiResponse<{ fileName: string; storagePath: string; signedUrl: string; }>> {
+  async htmlToPdfAndSave(htmlContent: string, user: { username: string; id: string }, dateRange: { from: Date, to: Date }): Promise<SaleTrackApiResponse<{ fileName: string; path: string; url: string; }>> {
     try {
       if(!this.apiKey) {
         throw new Error('API Key for Apiverve is not configured.');
       }
       
       const { username, id: userId } = user;
+
+      if(!(dateRange.from < dateRange.to)) {
+        this.logger.error('Invalid date range')
+        throw new BadRequestException('Invalid date range')
+      }
       
       /* 1️⃣ Generate PDF */
       const response = await axios.post(
@@ -62,22 +70,26 @@ export class PdfService {
       
       const pdfBuffer = Buffer.from(pdfResponse.data);
       
-      const filename = this.guidService.generateRequestId(username)
+      const filename = this.utils.generateRequestId(username, dateRange.from, dateRange.to)
       const path = this.utils.supabaseBucketPathBuilder(userId, 'statements', filename)
       
       /* 3️⃣ Upload to Supabase */
-      const res = await this.supabaseService.storageUpload('wallet-pdfs', path, pdfBuffer, 'application/pdf')
+      const res = await this.supabase.storageUpload('sales-reports', path, pdfBuffer, 'application/pdf')
       
       if(res.success && res.data)
         {
           /* 4️⃣ Generate signed URL (temporary download) */
-          const linkData = await this.supabaseService.createSignedLink(res.data.path, res.data.bucket_name, filename, 30);
+          const linkData = await this.supabase.createSignedLink(res.data.path, res.data.bucket_name, filename, 30);
+          if(!linkData?.data) {
+            throw new InternalServerErrorException('Failed to generate signed link');
+          }
+          const { fileName, path: filePath, url } = linkData.data as { fileName: string; path: string; url: string };
           return {
             success: true,
             data: { 
-              fileName: linkData.fileName,
-              storagePath: linkData.path,
-              signedUrl: linkData.signedUrl
+              fileName,
+              path: filePath,
+              url
             },
             message: 'Downloadable link created successfully'
           }
@@ -85,7 +97,7 @@ export class PdfService {
         throw new InternalServerErrorException('Failed to resolve function');
       } catch (error) {
         this.logger.error("PDF generation failed", error);
-        throw new BadRequestException("Failed to generate PDF");
+        throw new BadRequestException(`Failed to generate PDF, Cause: ${error.message}`);
       }
     }
 }
