@@ -2,6 +2,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { 
     IsDate,
+    IsDateString,
     IsEmail,
     // IsString,
     // IsUUID
@@ -20,14 +21,14 @@ export class CreateReportDto {
         example: '2024-06-01',
         description: 'The starting date to select sales record from'
     })
-    @IsDate()
+    @IsDateString()
     startDate: Date;
 
     @ApiProperty({
         example: '2024-06-30',
         description: 'The ending date to select sales record to'
     })
-    @IsDate()
+    @IsDateString()
     endDate: Date;
 
     @ApiProperty({

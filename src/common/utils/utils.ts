@@ -69,9 +69,17 @@ export class Utils {
     }
 
     generateShortGuid = (): string => uuidv4().split('-')[0];
-    generateRequestId (id: string, from: Date, to: Date): string {
-        const fromTime = `${String(from.getMonth()).padStart(2, "0")}-${String(from.getFullYear())}` ;
-        const toTime = `${String(to.getMonth()).padStart(2, "0")}-${String(to.getFullYear())}` ;
+    generateRequestId(
+        id: string,
+        from: Date | string,
+        to: Date | string,
+    ): string {
+        const fromDate = new Date(from);
+        const toDate = new Date(to);
+
+        const fromTime = `${String(fromDate.getMonth() + 1).padStart(2, '0')}-${fromDate.getFullYear()}`;
+        const toTime = `${String(toDate.getMonth() + 1).padStart(2, '0')}-${toDate.getFullYear()}`;
+
         return `SALE-TRACK-${id}-${this.generateShortGuid().toUpperCase()}-${fromTime}_${toTime}`;
     }
 

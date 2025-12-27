@@ -46,12 +46,12 @@ export class GeneratedReport {
         description: 'The total amount sales made in the range'
     })
     @IsEmail()
-    sent_to_email: string;
+    sent_to_email: string | null;
 
     @ApiProperty({
         description: 'The time the mail was sent'
     })
     @IsDate()
-    sent_at: Date;
+    sent_at: Date | null;
 }
 

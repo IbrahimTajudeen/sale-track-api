@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sales Report</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f7fa;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    /* ================= HEADER ================= */
+    .header {
+      padding: 30px 40px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .header p {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* ================= USER CONTAINER ================= */
+    .user-container {
+      padding: 30px 40px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .user-box {
+      font-size: 13px;
+    }
+
+    .user-box span {
+      display: block;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .user-box strong {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ================= ANALYTICS ================= */
+    .analytics {
+      padding: 30px 40px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card span {
+      display: block;
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .card strong {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .green {
+      color: #16a34a;
+    }
+
+    /* ================= TABLE ================= */
+    .table-section {
+      padding: 30px 40px 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .amount {
+      font-weight: 600;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>Sales Report</h1>
+      <p>Generated summary of user sales activity</p>
+      <p>Generated on ${new Date().toLocaleString()}</p>
+    </div>
+
+    <!-- USER INFO -->
+    <div class="user-container">
+      <div class="user-box">
+        <span>Username</span>
+        <strong>${userData.username}</strong>
+      </div>
+
+      <div class="user-box">
+        <span>First Name</span>
+        <strong>${userData.firstname}</strong>
+      </div>
+
+      <div class="user-box">
+        <span>Last Name</span>
+        <strong>${userData.lastname}</strong>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="analytics">
+      <div class="card">
+        <span>Total Sales (Range)</span>
+        <strong>${analytics.totalSaleRange}</strong>
+      </div>
+
+      <div class="card">
+        <span>Total Amount (Range)</span>
+        <strong class="green">₦${analytics.totalAmountRange}</strong>
+      </div>
+
+      <div class="card">
+        <span>Total Sales</span>
+        <strong>${analytics.totalSale}</strong>
+      </div>
+
+      <div class="card">
+        <span>Total Amount</span>
+        <strong class="green">₦${analytics.totalAmount}</strong>
+      </div>
+    </div>
+
+    <!-- RECORDS TABLE -->
+    <div class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- LOOP records here -->
+          <tr>
+            <td>{{sale_date}}</td>
+            <td>{{item_name}}</td>
+            <td>{{quantity}}</td>
+            <td>₦{{price_per_item}}</td>
+            <td class="amount">₦{{total_amount}}</td>
+            <td>{{notes}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footer-note">
+        <p>This report is system generated and does not require a signature.</p>
+        <footer>
+          SaleTrack © ${new Date().getFullYear()} from: NexoTechnology
+        </footer>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -6,13 +6,15 @@ import { SupabaseModule } from 'src/supabase/supabase.module';
 import { CommonModule } from 'src/common/common.module';
 import { PdfModule } from 'src/pdf/pdf.module';
 import { MailModule } from 'src/mail/mail.module';
+import { AppConfigModule } from 'src/config/appconfig.module';
 
 @Module({
   imports: [
     SupabaseModule,
     CommonModule,
     PdfModule,
-    MailModule
+    MailModule,
+    AppConfigModule
   ],
   controllers: [ReportsController],
   providers: [ReportsService],

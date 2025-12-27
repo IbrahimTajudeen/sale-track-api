@@ -14,5 +14,6 @@ import { CommonModule } from 'src/common/common.module';
   ],
   controllers: [PdfController],
   providers: [PdfService],
+  exports: [PdfService]
 })
 export class PdfModule {}

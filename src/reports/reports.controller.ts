@@ -5,9 +5,11 @@ import { UpdateReportDto } from './dto/update-report.dto';
 import { SaleTrackApiResponse } from 'src/common/utils/index.utils';
 import { User } from 'src/common/decorators/user.decorator';
 import { SupabaseAuthGuard } from 'src/common/guards/supabase.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(SupabaseAuthGuard)
-@Controller()
+@ApiBearerAuth('access-token')
+@Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 

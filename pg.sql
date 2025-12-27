@@ -1,0 +1,68 @@
+-- drop function if exists public.get_user_sales_report_with_user_meta;
+
+-- create function public.get_user_sales_report_with_user_meta(
+--   p_user_id uuid,
+--   p_start_date date,
+--   p_end_date date
+-- )
+-- returns table (
+--   result json
+-- )
+-- language plpgsql
+-- security definer
+-- as $$
+-- begin
+--   return query
+--   select json_build_object(
+--     'user', (
+--       select json_build_object(
+--         'id', u.id,
+--         'username', u.raw_user_meta_data ->> 'username',
+--         'first_name', u.raw_user_meta_data ->> 'firstname',
+--         'last_name', u.raw_user_meta_data ->> 'lastname'
+--       )
+--       from auth.users u
+--       where u.id = p_user_id
+--     ),
+
+--     'total_sale_range',
+--       count(*) filter (
+--         where sr.sale_date between p_start_date and p_end_date
+--       ),
+
+--     'total_amount_range',
+--       coalesce(
+--         sum(sr.total_amount) filter (
+--           where sr.sale_date between p_start_date and p_end_date
+--         ),
+--         0
+--       ),
+
+--     'total_sale', count(*),
+
+--     'total_amount', coalesce(sum(sr.total_amount), 0),
+
+--     'rows',
+--       coalesce(
+--         json_agg(
+--           json_build_object(
+--             'id', sr.id,
+--             'user_id', sr.user_id,
+--             'item_name', sr.item_name,
+--             'quantity', sr.quantity,
+--             'price_per_item', sr.price_per_item,
+--             'total_amount', sr.total_amount,
+--             'sale_date', sr.sale_date,
+--             'notes', sr.notes
+--           )
+--           order by sr.sale_date desc
+--         ) filter (
+--           where sr.sale_date between p_start_date and p_end_date
+--         ),
+--         '[]'::json
+--       )
+--   )
+--   from sales_records sr
+--   where sr.user_id = p_user_id;
+-- end;
+-- $$;

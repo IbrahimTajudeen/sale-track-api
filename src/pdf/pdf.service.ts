@@ -19,8 +19,8 @@ export class PdfService {
     private readonly utils: Utils
   ) {
     const { url, apiKey } = this.appConfig.apiVerve;
-    this.apiKey = url; 
-    this.baseUrl = apiKey;
+    this.apiKey = apiKey; 
+    this.baseUrl = url;
   }
 
   async htmlToPdfAndSave(htmlContent: string, user: { username: string; id: string }, dateRange: { from: Date, to: Date }): Promise<SaleTrackApiResponse<{ fileName: string; path: string; url: string; }>> {
@@ -70,6 +70,7 @@ export class PdfService {
       });
       
       const pdfBuffer = Buffer.from(pdfResponse.data);
+      this.logger.log('PDF Downloaded =============================')
       
       const filename = this.utils.generateRequestId(username, dateRange.from, dateRange.to)
       const path = this.utils.supabaseBucketPathBuilder(userId, 'statements', filename)
@@ -98,118 +99,265 @@ export class PdfService {
         throw new InternalServerErrorException('Failed to resolve function');
       } catch (error) {
         this.logger.error("PDF generation failed", error);
-        throw new BadRequestException(`Failed to generate PDF, Cause: ${error.message}`);
+        throw error; //(`Failed to generate PDF, Cause: ${error.message}`);
       }
   }
 
   async generateHTML(userData: {
     username: string,
-    firstname: string,
-    lastname: string
+    first_name: string,
+    last_name: string
   }, analytics: {
     totalSaleRange: number,
     totalAmountRange: number,
     totalSale: number,
     totalAmount: number,
   }, 
-  records: any[]): Promise<string> {
+  records: [{
+      item_name: string,
+      quantity: number,
+      price_per_item: number,
+      total_amount: number,
+      sale_date: string,
+      notes: string
+    }]): Promise<string> {
 
     const rows = records
-      .map((r, index) => `
+      .map((r) => `
         <tr>
-          <td>${index + 1}</td>
-          <td>${r.id}</td>
+          <td>${new Date(r.sale_date).toLocaleDateString()}</td>
           <td>${r.item_name}</td>
           <td>${r.quantity}</td>
           <td>₦${Number(r.price_per_item).toLocaleString()}</td>
-          <td>₦${Number(r.total_amount).toLocaleString()}</td>
-          <td>${new Date(r.sale_date).toLocaleDateString()}</td>
+          <td class="amount">₦${Number(r.total_amount).toLocaleString()}</td>
+          <td>${r.notes}</td>
         </tr>
       `).join('')
 
     return `
     <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <title>Sales Report</title>
-        <style>
-          body {
-            font-family: Arial, Helvetica, sans-serif;
-            padding: 30px;
-            color: #333;
-          }
-          h1 {
-            text-align: center;
-            margin-bottom: 5px;
-          }
-          .subtitle {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 14px;
-            color: #777;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-          }
-          th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            font-size: 13px;
-            text-align: left;
-          }
-          th {
-            background: #f5f5f5;
-            text-transform: uppercase;
-            font-size: 12px;
-          }
-          .total {
-            margin-top: 20px;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: right;
-          }
-          footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 11px;
-            color: #999;
-          }
-        </style>
-      </head>
-      <body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sales Report</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f7fa;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+    }
 
-        <h1>Sales Report</h1>
-        <div class="subtitle">Generated on ${new Date().toLocaleString()}</div>
+    .page {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
 
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Sale UUID</th>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Total</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
+    /* ================= HEADER ================= */
+    .header {
+      padding: 30px 40px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .header p {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* ================= USER CONTAINER ================= */
+    .user-container {
+      padding: 30px 40px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .user-box {
+      font-size: 13px;
+    }
+
+    .user-box span {
+      display: block;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .user-box strong {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ================= ANALYTICS ================= */
+    .analytics {
+      padding: 30px 40px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card span {
+      display: block;
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .card strong {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .green {
+      color: #16a34a;
+    }
+
+    /* ================= TABLE ================= */
+    .table-section {
+      padding: 30px 40px 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .amount {
+      font-weight: 600;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>Sales Report</h1>
+      <p>Generated summary of user sales activity</p>
+      <p>Generated on ${new Date().toLocaleString()}</p>
+    </div>
+
+    <!-- USER INFO -->
+    <div class="user-container">
+      <div class="user-box">
+        <span>Username</span>
+        <strong>${userData.username}</strong>
+      </div>
+
+      <div class="user-box">
+        <span>First Name</span>
+        <strong>${userData.first_name}</strong>
+      </div>
+
+      <div class="user-box">
+        <span>Last Name</span>
+        <strong>${userData.last_name}</strong>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="analytics">
+      <div class="card">
+        <span>Total Sales (Range)</span>
+        <strong>${analytics.totalSaleRange}</strong>
+      </div>
+
+      <div class="card">
+        <span>Total Amount (Range)</span>
+        <strong class="green">₦${analytics.totalAmountRange}</strong>
+      </div>
+
+      <div class="card">
+        <span>Total Sales</span>
+        <strong>${analytics.totalSale}</strong>
+      </div>
+
+      <div class="card">
+        <span>Total Amount</span>
+        <strong class="green">₦${analytics.totalAmount}</strong>
+      </div>
+    </div>
+
+    <!-- RECORDS TABLE -->
+    <div class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
             ${rows || `<tr><td colspan="6">No records found</td></tr>`}
-          </tbody>
-        </table>
+        </tbody>
+      </table>
 
-        <div class="total">
-          Grand Total: ₦${analytics.totalAmountRange.toLocaleString()}
-        </div>
-    
+      <div class="footer-note">
+        <p>This report is system generated and does not require a signature.</p>
         <footer>
           SaleTrack © ${new Date().getFullYear()} from: NexoTechnology
         </footer>
+      </div>
+    </div>
 
-      </body>
-    </html>`
+  </div>
+
+</body>
+</html>
+`
   }
 }
