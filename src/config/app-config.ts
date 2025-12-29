@@ -15,11 +15,13 @@ interface Supabase {
     projectId: string;
 }
 
-interface Smtp {
-    host: string;
-    port: number;
-    user: string;
-    pass: string;
+interface NodeMailer {
+    host: string;       // SMTP_HOST=smtp.gmail.com
+    port: number;       // SMTP_PORT=465
+    isSecure: boolean;  // SMTP_SECURE=true
+    user: string;       // SMTP_USER=saletrack@gmail.com
+    pass: string;       // SMTP_PASS=your_app_password 
+    from: string;       // MAIL_FROM="SaleTrack Reports <saletrack@gmail.com>"
 }
 
 interface ApiVerve {
@@ -33,6 +35,17 @@ export class AppConfigService {
 
     get app(): number {
         return this.configService.get<number>('PORT', 3100);
+    }
+
+    get mail(): NodeMailer {
+        return {
+            host: this.configService.get<string>('SMTP_HOST', ''),
+            port: this.configService.get<number>('SMTP_PORT', 0),
+            isSecure: this.configService.get<boolean>('SMTP_SECURE', false),
+            user: this.configService.get<string>('SMTP_USER', ''),
+            pass: this.configService.get<string>('SMTP_PASS', ''),
+            from: this.configService.get<string>('MAIL_FROM', '')
+        }
     }
 
     get supabase(): Supabase {

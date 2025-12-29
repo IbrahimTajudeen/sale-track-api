@@ -23,7 +23,7 @@ export class PdfService {
     this.baseUrl = url;
   }
 
-  async htmlToPdfAndSave(htmlContent: string, user: { username: string; id: string }, dateRange: { from: Date, to: Date }): Promise<SaleTrackApiResponse<{ fileName: string; path: string; url: string; }>> {
+  async htmlToPdfAndSave(htmlContent: string, user: { username: string; id: string }, dateRange: { from: Date, to: Date }): Promise<SaleTrackApiResponse<{ fileName: string; path: string; url: string; buffer: Buffer<any> }>> {
     try {
       if(!this.apiKey) {
         throw new Error('API Key for Apiverve is not configured.');
@@ -91,7 +91,8 @@ export class PdfService {
             data: { 
               fileName,
               path: filePath,
-              url
+              url,
+              buffer: pdfBuffer
             },
             message: 'Downloadable link created successfully'
           }
@@ -119,7 +120,6 @@ export class PdfService {
       price_per_item: number,
       total_amount: number,
       sale_date: string,
-      notes: string
     }]): Promise<string> {
 
     const rows = records
@@ -130,7 +130,6 @@ export class PdfService {
           <td>${r.quantity}</td>
           <td>₦${Number(r.price_per_item).toLocaleString()}</td>
           <td class="amount">₦${Number(r.total_amount).toLocaleString()}</td>
-          <td>${r.notes}</td>
         </tr>
       `).join('')
 
@@ -338,7 +337,6 @@ export class PdfService {
             <th>Qty</th>
             <th>Price</th>
             <th>Total</th>
-            <th>Notes</th>
           </tr>
         </thead>
         <tbody>

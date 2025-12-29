@@ -9,6 +9,7 @@ import { SupabaseService } from 'src/supabase/supabase.service';
 import { PdfService } from 'src/pdf/pdf.service';
 import { GeneratedReport } from './dto/generated-report.dto';
 import { SaleTrackApiResponse } from 'src/common/utils/api-response.util';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ReportsService {
@@ -16,7 +17,8 @@ export class ReportsService {
 
   constructor(
     private readonly supabase: SupabaseService,
-    private readonly pdfService: PdfService
+    private readonly pdfService: PdfService,
+    private readonly mailService: MailService
   ) {}
 
   async create(dto: CreateReportDto, user: any): Promise<SaleTrackApiResponse<any>> {
@@ -69,7 +71,14 @@ export class ReportsService {
           to: dto.endDate
       })
 
-      this.logger.log(`Link info: ${JSON.stringify(linkInfo, null, 2)}`)
+      await this.mailService.sendSaleReportEmail({
+        to: dto.sendEmail,
+        username: rpc_response.user.username,
+        firstname: rpc_response.user.first_name,
+        lastname: rpc_response.user.last_name,
+        reportDate: `from ${dto.startDate} to ${dto.endDate}`,
+        pdfBuffer: linkInfo.data?.buffer
+      })
 
       const reportInfo: GeneratedReport = {
         user_id: userId,
