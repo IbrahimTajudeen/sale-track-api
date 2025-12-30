@@ -82,7 +82,7 @@ export class AuthService {
         lastName: data.user.user_metadata.lastname,
         phone: data.user.user_metadata.phone,
         role: data.user.user_metadata.role,
-        username: data.user.user_metadata.email,
+        username: data.user.user_metadata.username,
         session: {
           token: data.session.access_token,
           refreshToken: data.session.refresh_token
