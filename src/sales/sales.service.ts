@@ -41,6 +41,7 @@ export class SalesService {
         price_per_item: dto.pricePerItem,
         quantity: dto.quantity,
         total_amount: total,
+        notes: dto.notes,
       });
 
       if(error)
