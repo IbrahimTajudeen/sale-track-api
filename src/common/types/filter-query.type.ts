@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsOptional, IsNumberString, } from 'class-validator';
+import { IsOptional, IsNumber, } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -7,13 +7,13 @@ export class FilterQuery {
   @ApiProperty({ example: 1, description: 'The current page number', required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsNumberString()
+  @IsNumber()
   page?: number = 1;
 
   @ApiProperty({ example: 10, description: 'The number of items per page', required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsNumberString()
+  @IsNumber()
   limit?: number = 10;
 
   /**
