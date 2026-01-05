@@ -76,6 +76,7 @@ export class SalesService {
         price_per_item: dto.pricePerItem,
         quantity: dto.quantity,
         total_amount: dto.pricePerItem * dto.quantity,
+        notes: dto.notes,
       }));
     
       const { error } = await this.supabase.adminClient()
