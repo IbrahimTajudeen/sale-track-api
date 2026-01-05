@@ -32,7 +32,7 @@ export class CreateSaleDto {
   })
   @IsInt()
   @Min(1)
-  quantity: number;
+  quantity: number = 1;
 
   @ApiProperty({
     description: 'Short description about the sales',
