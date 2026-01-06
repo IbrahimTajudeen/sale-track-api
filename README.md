@@ -1,98 +1,224 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 SaleTrack API (Backend)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+![Node.js](https://img.shields.io/badge/Node.js-20.x-green)
+![NestJS](https://img.shields.io/badge/NestJS-Framework-red)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strongly%20Typed-blue)
+![Supabase](https://img.shields.io/badge/BaaS-Supabase-3ECF8E)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue)
+![JWT](https://img.shields.io/badge/Auth-JWT-orange)
+![License](https://img.shields.io/badge/License-MIT-success)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**SaleTrack API** is the backend service powering the **SaleTrack .NET MAUI mobile application**.  
+It is built with **NestJS** and **TypeScript**, using **Supabase as a Backend-as-a-Service (BaaS)** for database, authentication, and storage.
 
-## Description
+The API is responsible for authentication, sales management, analytics, reporting, and secure communication with the MAUI frontend.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🔗 Related Repositories
 
-```bash
-$ pnpm install
+- 📱 **SaleTrack Mobile App (MAUI)** – Frontend client
+- 🌐 **SaleTrack API (This Repo)** – Backend service
+
+---
+
+## 🚀 Features (Aligned with MAUI App)
+
+- 🔐 Authentication (Supabase Auth + JWT)
+- 👤 User & role management (Cashier / Admin)
+- 🧾 Sales CRUD operations
+- 📶 Offline-first sync support
+- 📊 Sales analytics & reports
+- 📄 Report data for PDF / HTML generation
+- 📅 Date-range filtering
+- 🛡️ Guards, validation & role-based access
+- 🌍 RESTful API for mobile & web clients
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Node.js**
+- **NestJS**
+- **TypeScript**
+
+### Backend-as-a-Service (Supabase)
+- **PostgreSQL**
+- **Authentication**
+- **Storage**
+- **Row Level Security (RLS)**
+
+### Other Tools
+- **JWT**
+- **class-validator & class-transformer**
+- **Swagger (OpenAPI)**
+
+---
+
+## 📂 Project Structure
+
+```text
+sale-track-api/
+│
+├── src/
+│   ├── auth/          # Auth guards, JWT validation, Supabase auth
+│   ├── users/         # User profiles & roles - (Not Uploaded Yet)
+│   ├── sales/         # Sales records & logic
+│   ├── reports/       # Analytics & reporting
+│   ├── mail/          # Mailing Services
+│   ├── pdf/           # PDF generation and storage
+│   ├── common/        # Guards, interceptors, decorators
+│   ├── config/        # App & Supabase configuration
+│   ├── supabase/      # Supabase client & helpers
+│   ├── app.module.ts
+│   └── main.ts
+│
+├── test/              # Unit & e2e tests
+├── .env.example       # Environment variables template
+├── package.json
+└── README.md
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ pnpm run start
+🔐 Authentication Flow (Same as MAUI App)
 
-# watch mode
-$ pnpm run start:dev
+User logs in from the MAUI app
 
-# production mode
-$ pnpm run start:prod
+Supabase Auth authenticates the user
+
+Supabase issues a JWT
+
+MAUI app stores the token securely
+
+Token is sent with every API request:
+```curl
+Authorization: Bearer <token>
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ pnpm run test
+🧾 Sale Data Format (Shared with MAUI)
 
-# e2e tests
-$ pnpm run test:e2e
+The API accepts and returns sales data in the exact format used by the MAUI app:
 
-# test coverage
-$ pnpm run test:cov
+```json
+{
+  "sale_date": "2024-06-15T14:30:00Z",
+  "item_name": "Shawarma",
+  "price_per_item": 99.99,
+  "quantity": 2,
+  "total_amount": 199.98,
+  "notes": "Customer requested black color"
+}
 ```
 
-## Deployment
+---
+⚙️ Environment Variables
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Create a .env file using .env.example:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```md
+PORT=3000
+NODE_ENV=development
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+JWT_SECRET=your_jwt_secret
+# And more
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+🚀 Getting Started
+Install Dependencies
+```bash
+npm install
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+Run in Development
+```bash
+npm run start:dev
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Build for Production
+```bash
+npm run build
+npm run start:prod
+```
 
-## Support
+🧪 Testing
+```bash
+npm run test
+npm run test:e2e
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+📘 API Documentation
 
-## Stay in touch
+Swagger documentation is available at:
+```bash
+http://localhost:3000/api
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+🗺️ Roadmap (Backend)
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+ -Refresh token support
+
+ -Multi-branch isolation
+
+ -Rate limiting
+
+ -Audit logs
+
+ -Webhooks
+
+ -Admin dashboard endpoints
+
+ ---
+
+ 🤝 Contributing
+
+Fork the repository
+
+Create a feature branch
+
+Commit your changes
+
+Open a Pull Request
+
+---
+
+📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+👤 Author
+
+Ibrahim Tajudeen
+Software Developer
+
+GitHub: https://github.com/ibrahimtajudeen
+
+Email: donslice6@gmail.com
+
+---
+
+Built with ❤️ to power the SaleTrack .NET MAUI App
+
+```md
+### ✅ What’s aligned now
+- Same **sale JSON**
+- Same **auth flow**
+- Same **offline sync concept**
+- Same **roles**
+- Same **reporting model**
+- Same **terminology**
+
+```
